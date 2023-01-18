@@ -1,0 +1,2 @@
+[hosts]
+54.216.105.56 ansible_user=ansible_use

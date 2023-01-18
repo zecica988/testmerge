@@ -1,0 +1,29 @@
+name: 'mwg-check'
+
+on:
+  pull_request:
+          #types: [opened, reopened, edited, synchronize]
+    paths:
+      - 'ansible/**'
+        #  pull_request_review:
+        #    types: [dismissed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  mwg-check:
+    runs-on: [ self-hosted, Linux ]
+    if: ${{ (!github.event.pull_request.merged ) && (!github.event.pull_request.draft) }}
+    defaults:
+      run:
+        working-directory: ./ansible
+    steps:
+    - uses: actions/checkout@v3
+    - uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_KEY }}
+    - id: 'mwg-check'
+      run: |
+        ansible-playbook -i inventory.yaml hello-world.yaml -C
