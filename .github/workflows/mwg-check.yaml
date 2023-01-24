@@ -24,11 +24,13 @@ jobs:
     - id: 'filter-check'
       uses: dorny/paths-filter@v2
       with:
-        filters: '.github/filters.yaml'
+        filters: |
+          ansible:
+            - 'ansible/keys/**'
     - uses: webfactory/ssh-agent@v0.7.0
       with:
         ssh-private-key: ${{ secrets.SSH_KEY }}
-    - id: 'mwg-check'
-      if: steps.filter-check.outputs.ansible == 'true'
+    - if: steps.filter-check.outputs.ansible == 'true'
+      id: 'mwg-check'
       run: |
         ansible-playbook -i inventory.yaml hello-world.yaml -C
