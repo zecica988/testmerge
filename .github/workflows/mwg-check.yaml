@@ -16,11 +16,37 @@ permissions:
 jobs:
   mwg-check:
     runs-on: [ self-hosted, Linux ]
-    if: ${{ (!github.event.pull_request.merged ) && (!github.event.pull_request.draft) }}
+    outputs:
+      run_job: ${{ steps.check_files.outputs.run_job }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: check modified files
+      id: check_files
+      run: |
+        echo "=============== list modified files ==============="
+        git diff --name-only HEAD^ HEAD
+  
+        echo "========== check paths of modified files =========="
+        git diff --name-only HEAD^ HEAD &gt; test.txt
+        while IFS= read -r file
+        do
+          echo $file
+          if [[ $file != ansible/keys/* ]]; then
+            echo "This modified file is not under the 'keys' folder."
+            echo "::set-output name=run_job::false"
+            break
+          else
+            echo "::set-output name=run_job::true"
+          fi
+        done &lt; test.txt
+
+  mwg-check:
+    needs: check
+    runs-on: [ self-hosted, Linux ]
+    if: ${{ (!github.event.pull_request.merged ) && (!github.event.pull_request.draft) && (needs.check.outputs.run_job == 'true') }}
     defaults:
       run:
         working-directory: ./ansible
-    steps:
     - uses: actions/checkout@v3
     - uses: webfactory/ssh-agent@v0.7.0
       with:
