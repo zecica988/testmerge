@@ -14,7 +14,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  mwg-check:
+  check:
     runs-on: [ self-hosted, Linux ]
     outputs:
       run_job: ${{ steps.check_files.outputs.run_job }}
