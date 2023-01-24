@@ -4,7 +4,6 @@ on:
   pull_request:
           #types: [opened, reopened, edited, synchronize]
     paths:
-      - '!**/**'
       - 'ansible/**'
         #  pull_request_review:
         #    types: [dismissed]
@@ -14,17 +13,22 @@ permissions:
   pull-requests: write
 
 jobs:
-  mwg-check:
+  check:
+    if: ${{ (!github.event.pull_request.merged ) && (!github.event.pull_request.draft) && (needs.check.outputs.run_job == 'true') }}
     runs-on: [ self-hosted, Linux ]
-    if: ${{ (!github.event.pull_request.merged ) && (!github.event.pull_request.draft) }}
     defaults:
       run:
         working-directory: ./ansible
     steps:
     - uses: actions/checkout@v3
+    - id: 'filter-check'
+      uses: dorny/paths-filter@v2
+      with:
+        filters: '.github/filters.yaml'
     - uses: webfactory/ssh-agent@v0.7.0
       with:
         ssh-private-key: ${{ secrets.SSH_KEY }}
     - id: 'mwg-check'
+      if: steps.filter-check.outputs.ansible == 'true'
       run: |
         ansible-playbook -i inventory.yaml hello-world.yaml -C
