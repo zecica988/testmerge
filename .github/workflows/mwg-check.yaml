@@ -21,12 +21,14 @@ jobs:
         working-directory: ./ansible
     steps:
     - uses: actions/checkout@v3
-    - uses: dorny/paths-filter@v2
+    - id: 'filter-check'
+      uses: dorny/paths-filter@v2
       with:
         filters: '.github/filters.yaml'
     - uses: webfactory/ssh-agent@v0.7.0
       with:
         ssh-private-key: ${{ secrets.SSH_KEY }}
     - id: 'mwg-check'
+      if: steps.filter-check.outputs.ansible == 'true'
       run: |
         ansible-playbook -i inventory.yaml hello-world.yaml -C
