@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   check:
-    if: ${{ (!github.event.pull_request.merged ) && (!github.event.pull_request.draft) && (needs.check.outputs.run_job == 'true') }}
+    if: ${{ (!github.event.pull_request.merged ) && (!github.event.pull_request.draft) }}
     runs-on: [ self-hosted, Linux ]
     defaults:
       run:
